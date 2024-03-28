@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const { default: mongoose } = require('mongoose')
 
 
 const port = process.env.PORT || 8000
@@ -8,6 +9,23 @@ const app = express()
 
 app.use(cors())
 app.use(bodyParser.json())
+
+mongoose.connect('mongodb://localhost:27017/engineData',
+{
+    useNewUrlParser: true,
+    userUnifiedTopology: true
+})
+
+//Mongoose schema for engine data
+const engineDataSchema = new mongoose.Schema({
+    voltage: Number,
+    current: Number,
+    power: Number,
+    powekVA: Number,
+    frequency: Number,
+    pressure: Number,
+    temperature: Number
+}, {timestamps: true})
 
 
 app.get('/voltage',
