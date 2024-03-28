@@ -108,7 +108,24 @@ app.get('/engine/:id/voltage',(req,res)=>{
     res.status(200)
 })
 
-app.post('/webhook', )
+app.post('/webhook', (req, res)=>{
+    const data = req.body
+
+    console.log('data recieved from IOT', data);
+    res.sendStatus(200)
+})
+
+app.post('api/data', async(req,res)=>{
+    try{
+        const newData = new EngineData(req.body)
+        await newData.save()
+        res.sendStatus(201)
+}
+catch(error){
+    console.error('Error saving data: ',error)
+    res.sendStatus(500)
+}
+})
 
 app.listen(port,()=>{
     console.log('server running ');
