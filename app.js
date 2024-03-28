@@ -13,7 +13,7 @@ app.use(bodyParser.json())
 mongoose.connect('mongodb://localhost:27017/engineData',
 {
     useNewUrlParser: true,
-    userUnifiedTopology: true
+    useUnifiedTopology: true
 }).then(()=>{
     console.log('connected to the database');
 }).catch(err => console.log('error connecting to database ',err ))
