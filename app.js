@@ -7,6 +7,7 @@ const port = process.env.PORT || 8000
 const app = express()
 
 app.use(cors())
+app.use(bodyParser.json())
 
 
 app.get('/voltage',
@@ -106,6 +107,8 @@ app.get('/oil-pressure', (req,res)=>{
 app.get('/engine/:id/voltage',(req,res)=>{
     res.status(200)
 })
+
+app.post('/webhook', )
 
 app.listen(port,()=>{
     console.log('server running ');
