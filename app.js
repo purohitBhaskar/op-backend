@@ -1,152 +1,54 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const cors = require('cors')
-const { default: mongoose } = require('mongoose')
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
+// Connect to MongoDB Atlas
+mongoose.connect('mongodb+srv://bhaskarp:PrtqT4JE8HxFV0La@cluster0.rgdzykc.mongodb.net/', { useNewUrlParser: true, useUnifiedTopology: true });
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+db.once('open', () => {
+    console.log('Connected to MongoDB Atlas');
+});
 
-const port = process.env.PORT || 8000
-const app = express()
+// Define schema for IoT data
+const IoTDataSchema = new mongoose.Schema({
+    sensorId: String,
+    data: Number,
+    timestamp: { type: Date, default: Date.now }
+});
 
-app.use(cors())
-app.use(bodyParser.json())
+const IoTData = mongoose.model('IoTData', IoTDataSchema);
 
-mongoose.connect('mongodb://localhost:27017/engineData',
-{
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(()=>{
-    console.log('connected to the database');
-}).catch(err => console.log('error connecting to database ',err ))
+const app = express();
 
-//Mongoose schema for engine data
-const engineDataSchema = new mongoose.Schema({
-    voltage: Number,
-    current: Number,
-    power: Number,
-    powekVA: Number,
-    frequency: Number,
-    pressure: Number,
-    temperature: Number
-}, {timestamps: true})
+// Middleware to parse JSON bodies
+app.use(bodyParser.json());
 
-
-app.get('/voltage',
-    (req,res)=>{
-        try{
-             res.status(200).json({
-                message:{
-                    title: 'getting voltage values',
-                    detail:12
-                }
-            })
-        }catch(err){
-            console.error(err)
-        }
+// POST endpoint for receiving data from IoT device
+app.post('/iot/data', async (req, res) => {
+    const { sensorId, data } = req.body;
+    if (!sensorId || !data) {
+        return res.status(400).json({ error: 'Missing sensorId or data field' });
     }
 
-)
+    // Create new IoTData document
+    const newData = new IoTData({
+        sensorId,
+        data
+    });
 
-app.get('/current',
-    (req,res)=>{
-        res.status(200).json({
-            message:{
-                title: 'getting current values',
-                detail:120
-            }
-        })
+    try {
+        // Save data to MongoDB
+        await newData.save();
+        console.log('Data saved successfully');
+        res.status(201).json({ message: 'Data saved successfully' });
+    } catch (err) {
+        console.error('Error saving data: ', err);
+        res.status(500).json({ error: 'Error saving data' });
     }
-)
+});
 
-app.get('/frequency',
-    (req,res)=>{
-        res.status(200).json({
-            title: 'getting frequency values',
-            detail: 49.5
-        })
-    }
-)
-
-app.get('/power',
-   (req,res)=>{
-    res.status(200).json({
-        message:{
-            title: 'getting power values',
-            detail: 44
-        }
-    })
-   }
-
-)
-
-app.get('/powerinKVA',(req, res)=>{
-    res.status.json({
-        message:{
-            title: 'getting power values in KVA',
-            detail: 44
-        }
-    })
-})
-
-app.get('/engine-running-hrs',(req, res)=>{
-    res.status(200).json({
-        message:{
-            title: 'getting engine running status values',
-            detail: 10
-        }
-    })
-})
-
-app.get('/engine-rpm',(req,res)=>{
-    res.status(200).json({
-        message:{
-            title: 'getting engine RPM values',
-            detail: 50
-        }
-    })
-})
-
-
-app.get('/coolant-temperature',(req,res)=>{
-    res.status(200).json({
-        message:{
-            title: 'getting coolant temperature',
-            detail: 50
-        }
-    })
-})
-
-app.get('/oil-pressure', (req,res)=>{
-    res.status(200).json({
-        message:{
-            title: 'getting oil pressure',
-            detail: 50
-        }
-    })
-})
-
-app.get('/engine/:id/voltage',(req,res)=>{
-    res.status(200)
-})
-
-app.post('/webhook', (req, res)=>{
-    const data = req.body
-
-    console.log('data recieved from IOT', data);
-    res.sendStatus(200)
-})
-
-app.post('api/data', async(req,res)=>{
-    try{
-        const newData = new EngineData(req.body)
-        await newData.save()
-        res.sendStatus(201)
-}
-catch(error){
-    console.error('Error saving data: ',error)
-    res.sendStatus(500)
-}
-})
-
-app.listen(port,()=>{
-    console.log('server running ');
-})
+const PORT = process.env.PORT || 3030;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
