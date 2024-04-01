@@ -110,10 +110,20 @@ app.post('/iot/data', async (req, res) => {
     }
 });
 
-app.get('/iot/data',(req,res)=>{
-    res.status(200).json({
-        
-    })
+app.get('/iot/data',async (req,res)=>{
+    try{
+        const allData = await IoTData.find()
+
+        if(allData.length === 0){
+            return res.status(404).json({
+                message: 'No Data Found!'
+            })
+        }
+        res.status(200).json(allData)
+    }catch(err){
+        console.error('Error fetching Data: ',err)
+        res.status(500).json({ error: 'Error fetching data'})
+    }
 })
 
 const PORT = process.env.PORT || 3030;
