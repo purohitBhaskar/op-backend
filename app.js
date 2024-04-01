@@ -12,8 +12,58 @@ db.once('open', () => {
 
 // Define schema for IoT data
 const IoTDataSchema = new mongoose.Schema({
-    sensorId: String,
-    data: Number,
+    voltage:{
+        type: String,
+        required: true
+    }, 
+    power:{
+        type: String,
+        required: true
+    }, 
+    kw:{
+        type: String,
+        required: true
+    }, 
+    kva:{
+        type: String,
+        required: true
+    }, 
+    powerFactor:{
+        type: String,
+        required: true
+    }, 
+    current:{
+        type: String,
+        required: true
+    }, 
+    engineRunningTime:{
+        type: String,
+        required: true
+    }, 
+    frequency:{
+        type: String,
+        required: true
+    }, 
+    engineRPM:{
+        type: String,
+        required: true
+    }, 
+    coolerTemp:{
+        type: String,
+        required: true
+    }, 
+    oilPressure:{
+        type: String,
+        required: true
+    }, 
+    batteryVoltage:{
+        type: String,
+        required: true
+    },
+    fuelLevel:{
+        type: String,
+        required: true
+    },
     timestamp: { type: Date, default: Date.now }
 });
 
@@ -26,15 +76,27 @@ app.use(bodyParser.json());
 
 // POST endpoint for receiving data from IoT device
 app.post('/iot/data', async (req, res) => {
-    const { sensorId, data } = req.body;
-    if (!sensorId || !data) {
+    
+    const { voltage, power, kw, kva, powerFactor, current, engineRunningTime, frequency, engineRPM, coolerTemp, oilPressure, batteryVoltage,fuelLevel } = req.body;
+    if (!voltage || !power || !kw || !kva || !powerFactor || !current || !engineRunningTime || !frequency || !engineRPM || !coolerTemp || !oilPressure || !batteryVoltage || !fuelLevel) {
         return res.status(400).json({ error: 'Missing sensorId or data field' });
     }
 
     // Create new IoTData document
     const newData = new IoTData({
-        sensorId,
-        data
+        voltage, 
+        power, 
+        kw, 
+        kva, 
+        powerFactor, 
+        current, 
+        engineRunningTime, 
+        frequency, 
+        engineRPM, 
+        coolerTemp, 
+        oilPressure, 
+        batteryVoltage,
+        fuelLevel
     });
 
     try {
@@ -47,6 +109,12 @@ app.post('/iot/data', async (req, res) => {
         res.status(500).json({ error: 'Error saving data' });
     }
 });
+
+app.get('/iot/data',(req,res)=>{
+    res.status(200).json({
+        
+    })
+})
 
 const PORT = process.env.PORT || 3030;
 app.listen(PORT, () => {
